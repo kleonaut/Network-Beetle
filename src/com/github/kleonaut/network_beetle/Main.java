@@ -11,11 +11,7 @@ public class Main {
     // NOTE: icon image may not be found after exporting to JAR
 
     public static void main(String[] args) {
-        try {
-            Application app = new Application();
-            app.run();
-        } catch (InterruptedException | IOException | AWTException e) {
-            throw new RuntimeException(e);
-        }
+        Application app = new Application();
+        app.start();
     }
 }

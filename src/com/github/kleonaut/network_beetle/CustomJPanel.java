@@ -6,10 +6,10 @@ import java.awt.Graphics;
 
 public class CustomJPanel extends JPanel {
 
-    private Color backgroundColor = Color.RED;
+    private Color backgroundColor = Color.GRAY;
 
-    public void setIsGreen(boolean value) {
-        backgroundColor = value ? Color.GREEN : Color.RED;
+    public void setColor(Color c) {
+        backgroundColor = c;
         this.repaint();
     }
 
