@@ -2,18 +2,16 @@ package com.github.kleonaut.network_beetle;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
-import java.awt.*;
+import javax.swing.Timer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Properties;
+import java.awt.*;
 
 public class Application
 {
     // TODO: use ProcessBuilder instead of Runtime.exec()
-    // TODO: use util.Timer instead of while(true) and Thread.sleep()
 
     private final JFrame frame = new JFrame("Network Beetle");
     private final CustomJPanel panel = new CustomJPanel();
@@ -22,13 +20,16 @@ public class Application
 
     private final NetworkShell netsh = new NetworkShell();
     private final Tasklist tasklist = new Tasklist();
-    private final NetworkProfile lowProfile = null; // null is offline profile
-    private final NetworkProfile highProfile = new NetworkProfile("Motorola Edge '22");
-    private final MicrosoftProcess[] highProcesses = { new MicrosoftProcess("mspaint.exe"),
-                                                       new MicrosoftProcess("calculatorapp.exe") };
+    private final NetworkProfile lowProfile  = new NetworkProfile("Kirklin_5GEXT");
+    private final NetworkProfile highProfile = new NetworkProfile("Kirklin_2GEXT");
+    private final MicrosoftProcess[] highProcesses = { new MicrosoftProcess("aces.exe") };
 
-    public Application() throws IOException, AWTException
+    private boolean isEnabled = true;
+    private final Timer timer;
+
+    public Application()
     {
+        // ---------------- Window
         frame.setSize(300, 200);
         frame.setResizable(false);
         frame.setLocationRelativeTo(null);
@@ -41,20 +42,36 @@ public class Application
         PopupMenu menu = new PopupMenu();
         MenuItem showButton = new MenuItem("Open");
         showButton.addActionListener(showAction);
-        MenuItem quitButton = new MenuItem("Quit");
+        MenuItem quitButton = new MenuItem("Quit Network Beetle");
         quitButton.addActionListener(quitAction);
+        MenuItem disableButton = new MenuItem("Disable");
+        disableButton.addActionListener(disableAction);
+        MenuItem enableButton = new MenuItem("Enable");
+        enableButton.addActionListener(enableAction);
+        menu.add(enableButton);
+        menu.add(disableButton);
         menu.add(showButton);
         menu.add(quitButton);
 
         // ----------------- Tray Icon
-        BufferedImage image = ImageIO.read(Main.class.getResource("/resources/icon.png"));
-        trayIcon = new TrayIcon(image, "Network Beetle", menu);
-        trayIcon.addActionListener(showAction);
-        tray.add(trayIcon);
+        try {
+            BufferedImage image = ImageIO.read(Main.class.getResource("/resources/icon.png"));
+            trayIcon = new TrayIcon(image, "Network Beetle", menu);
+            trayIcon.addActionListener(showAction);
+            tray.add(trayIcon);
+        } catch (IOException | AWTException e)
+        {
+            throw new RuntimeException(e);
+        }
 
-        // ----------------- Load properties
-        Properties networkProps = new Properties();
-        networkProps.load(Main.class.getResourceAsStream("/resources/network.properties"));
+        // ----------------- Timer
+        timer = new Timer(1000, runAction);
+        timer.setInitialDelay(0);
+    }
+
+    public void start()
+    {
+        timer.start();
     }
 
     // ---------------- Actions
@@ -71,24 +88,44 @@ public class Application
             System.exit(0);
         }
     };
-
-
-    public void run() throws InterruptedException, IOException
-    {
-        while(true)
-        {
-            NetworkProfile nextProfile = lowProfile;
-            boolean isGreen = false;
-            for (MicrosoftProcess process : highProcesses)
-                if (tasklist.hasProcess(process))
-                {
-                    nextProfile = highProfile;
-                    isGreen = true;
-                    break;
-                }
-            netsh.setProfile(nextProfile); // does nothing if is already in that profile
-            panel.setIsGreen(isGreen);
-            Thread.sleep(1000);
+    ActionListener disableAction = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            timer.stop();
+            panel.setColor(Color.GRAY);
         }
-    }
+    };
+    ActionListener enableAction = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if(timer.isRunning() == false)
+                timer.restart();
+        }
+    };
+
+    ActionListener runAction = new ActionListener()
+    {
+        @Override
+        public void actionPerformed(ActionEvent event)
+        {
+            if(isEnabled)
+            {
+                Color c = Color.RED;
+                NetworkProfile nextProfile = lowProfile;
+                try {
+                     for (MicrosoftProcess process : highProcesses)
+                        if (tasklist.hasProcess(process)) {
+                            nextProfile = highProfile;
+                            c = Color.GREEN;
+                            break;
+                        }
+                    netsh.setProfile(nextProfile); // does nothing if is already in that profile
+                } catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
+                panel.setColor(c);
+            }
+        }
+    };
 }
