@@ -1,32 +1,39 @@
 package com.github.kleonaut.network_beetle;
 
+import javax.management.InstanceAlreadyExistsException;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.util.NoSuchElementException;
 
 public class Window {
 
+    // FIX: first time power button is pressed has no effect
     // TODO: use processes.getSelectedItem() instead of entryField.getItem() if that works
-    // TODO: make fields inaccessible while app is runnning using setEnabled();
+    // TODO: make fields inaccessible while app is runnning using setEnabled()
+    // TODO: add network profile picker
     // TODO: use an image for power button
 
     private final App app;
+    private final Dossier dossier;
     private final JFrame frame;
+    private final ComboBoxModel<MicrosoftProcess> processes; // replace with custom class
     private final ComboBoxEditor entryField;
-    private final JList<String> jList;
+    private final JList<MicrosoftProcess> criteriaList;
     private final JButton powerButton;
-    private final DefaultListModel<String> patterns;
-    private final ComboBoxModel<String> processes;
+    private boolean isPowered;
 
-    public Window(App app)
+    public Window(App app, Dossier dossier)
     {
         this.app = app;
-        frame = new JFrame(app.NAME);
+        this.dossier = dossier;
 
         // ---------------- Define GUI
+        frame = new JFrame(app.NAME);
+
         processes = new DefaultComboBoxModel<>();
-        JComboBox<String> jComboBox = new JComboBox<String>(processes);
+        JComboBox<MicrosoftProcess> jComboBox = new JComboBox<>(processes);
         jComboBox.setEditable(true);
         entryField = jComboBox.getEditor();
         entryField.setItem("");
@@ -37,11 +44,10 @@ public class Window {
         JButton removeButton = new JButton("Remove");
         removeButton.addActionListener(e -> removeAction());
 
-        patterns = new DefaultListModel<String>();
-        jList = new JList<String>(patterns);
-        jList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        jList.setLayoutOrientation(JList.VERTICAL);
-        jList.addListSelectionListener(selectAction);
+        criteriaList = new JList<>(dossier.getCriteria());
+        criteriaList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        criteriaList.setLayoutOrientation(JList.VERTICAL);
+        criteriaList.addListSelectionListener(selectAction);
 
         powerButton = new JButton("Enable");
         powerButton.addActionListener(e -> powerAction());
@@ -61,7 +67,7 @@ public class Window {
         c.gridy = 1;
             c.fill = GridBagConstraints.BOTH;
             c.gridx = 0; c.weighty = 1; c.gridwidth = 3;
-                panel.add(jList, c);
+                panel.add(criteriaList, c);
         c.gridy = 2;
             c.fill = GridBagConstraints.NONE;
             c.weighty = 0;
@@ -80,42 +86,41 @@ public class Window {
 
     private void addAction()
     {
-        String pattern = ( (String) entryField.getItem() ).trim();
-        if (pattern.isEmpty() || indexOf(pattern) != -1) // if no string or already in list
-        {
+        String imageName = entryField.getItem().toString();
+        MicrosoftProcess process = new MicrosoftProcess(imageName);
+        try {
+            dossier.addCriterion(process);
+        } catch (InstanceAlreadyExistsException e) {
             Toolkit.getDefaultToolkit().beep();
             entryField.selectAll();
             return;
         }
-        patterns.addElement(pattern);
         entryField.setItem("");
     }
 
     private void removeAction()
     {
-        String pattern = ( (String) entryField.getItem() ).trim();
-        int index = indexOf(pattern);
-        if (index == -1) // if not in list
-        {
+        String imageName = entryField.getItem().toString();
+        System.out.println("Image Name: "+imageName);
+        MicrosoftProcess process = new MicrosoftProcess(imageName);
+        try {
+            dossier.removeCriterion(process);
+        } catch (NoSuchElementException e) {
             Toolkit.getDefaultToolkit().beep();
-            return;
+        } finally {
+            entryField.setItem("");
         }
-        patterns.remove(index);
-        entryField.selectAll();
-    }
-
-    private int indexOf(String pattern) // index in patterns, returns -1 if not in patterns
-    {
-        for (int i = 0; i < patterns.size(); i++)
-            if (pattern.equals(patterns.get(i)))
-                return i;
-        return -1;
     }
 
     public void powerAction()
     {
-        app.setEnabled(!app.isEnabled());
-        String buttonText = app.isEnabled() ? "Disable" : "Enable";
+        app.togglePower();
+    }
+
+    public void togglePower()
+    {
+        isPowered = !isPowered;
+        String buttonText = isPowered ? "Disable" : "Enable";
         powerButton.setText(buttonText);
     }
 
@@ -124,12 +129,11 @@ public class Window {
         public void valueChanged(ListSelectionEvent e) {
             if (e.getValueIsAdjusting()) // another event is sent when user lets go of mouse, this lets me ignore it
             {
-                String pattern = jList.getSelectedValue();
-                entryField.setItem(pattern);
+                MicrosoftProcess process = criteriaList.getSelectedValue();
+                entryField.setItem(process);
             }
         }
     };
-
 
     public void reveal() { frame.setVisible(true); }
 }

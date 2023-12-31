@@ -14,6 +14,7 @@ public class App
 {
     public final String NAME = "Network Beetle";
 
+    // TODO: consider having no lowProfile, instead switch to whatever network was there before!
     // TODO: switch to lambdas for listeners
     // TODO: use ProcessBuilder instead of Runtime.exec()
     // TODO: optimize using ProcessHandler.isAlive() to not invoke Tasklist
@@ -21,18 +22,15 @@ public class App
     private final Window window;
     private final SystemTray tray = SystemTray.getSystemTray();
     private final TrayIcon trayIcon;
+    private final BackgroundActivity activity;
+    CheckboxMenuItem powerButton;
 
-    private final NetworkShell netsh = new NetworkShell();
-    private final Tasklist tasklist = new Tasklist();
-    private final NetworkProfile lowProfile  = new NetworkProfile("Kirklin_5GEXT");
-    private final NetworkProfile highProfile = new NetworkProfile("Kirklin_2GEXT");
-    private final MicrosoftProcess[] highProcesses = { new MicrosoftProcess("aces.exe") };
-
-    private final Timer timer;
 
     public App()
     {
-        window = new Window(this);
+        Dossier dossier = new Dossier();
+        window = new Window(this, dossier);
+        activity = new BackgroundActivity(dossier);
 
         // ---------------- Popup Menu
         PopupMenu menu = new PopupMenu();
@@ -40,7 +38,7 @@ public class App
         revealButton.addActionListener(revealAction);
         MenuItem quitButton = new MenuItem("Quit "+NAME);
         quitButton.addActionListener(quitAction);
-        CheckboxMenuItem powerButton = new CheckboxMenuItem("Enabled");
+        powerButton = new CheckboxMenuItem("Enabled");
         powerButton.setState(true);
         powerButton.addItemListener(powerAction);
         menu.add(revealButton);
@@ -59,24 +57,16 @@ public class App
             throw new RuntimeException(e);
         }
 
-        // ----------------- Timer
-        timer = new Timer(1000, runAction);
-        timer.setInitialDelay(0);
+        // ----------------- Start
+        togglePower();
     }
 
-    public void start()
+    public void togglePower()
     {
-        timer.start();
+        activity.togglePower();
+        window.togglePower();
+        powerButton.setState(!powerButton.getState());
     }
-    public void setEnabled(boolean flag)
-    {
-        if (flag == true)
-            if(timer.isRunning() == false)
-                timer.restart();
-        if (flag == false)
-            timer.stop();
-    }
-    public boolean isEnabled() { return timer.isRunning(); }
 
     // ---------------- Actions
     ActionListener revealAction = new ActionListener() {
@@ -85,6 +75,7 @@ public class App
             window.reveal();
         }
     };
+
     ActionListener quitAction = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -92,31 +83,11 @@ public class App
             System.exit(0);
         }
     };
-    ItemListener powerAction = new ItemListener() {
 
+    ItemListener powerAction = new ItemListener() {
         @Override
         public void itemStateChanged(ItemEvent e) {
-            window.powerAction();
-        }
-    };
-
-    ActionListener runAction = new ActionListener()
-    {
-        @Override
-        public void actionPerformed(ActionEvent event)
-        {
-            NetworkProfile nextProfile = lowProfile;
-            try {
-                 for (MicrosoftProcess process : highProcesses)
-                    if (tasklist.hasProcess(process)) {
-                        nextProfile = highProfile;
-                        break;
-                    }
-                netsh.setProfile(nextProfile); // does nothing if is already in that profile
-            } catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
+            togglePower();
         }
     };
 }
