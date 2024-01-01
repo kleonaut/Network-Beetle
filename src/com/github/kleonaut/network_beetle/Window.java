@@ -16,24 +16,24 @@ public class Window {
     // TODO: use an image for power button
 
     private final App app;
-    private final Dossier dossier;
+    private final Proposal proposal;
     private final JFrame frame;
-    private final ComboBoxModel<MicrosoftProcess> processes; // replace with custom class
+    private final ComboBoxModel<String> processes; // replace with custom class
     private final ComboBoxEditor entryField;
-    private final JList<MicrosoftProcess> criteriaList;
+    private final JList<String> criteriaList;
     private final JButton powerButton;
     private boolean isPowered;
 
-    public Window(App app, Dossier dossier)
+    public Window(App app)
     {
         this.app = app;
-        this.dossier = dossier;
+        proposal = new Proposal();
 
         // ---------------- Define GUI
         frame = new JFrame(app.NAME);
 
         processes = new DefaultComboBoxModel<>();
-        JComboBox<MicrosoftProcess> jComboBox = new JComboBox<>(processes);
+        JComboBox<String> jComboBox = new JComboBox<>(processes);
         jComboBox.setEditable(true);
         entryField = jComboBox.getEditor();
         entryField.setItem("");
@@ -44,7 +44,7 @@ public class Window {
         JButton removeButton = new JButton("Remove");
         removeButton.addActionListener(e -> removeAction());
 
-        criteriaList = new JList<>(dossier.getCriteria());
+        criteriaList = new JList<>(proposal.criteriaModel());
         criteriaList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         criteriaList.setLayoutOrientation(JList.VERTICAL);
         criteriaList.addListSelectionListener(selectAction);
@@ -86,10 +86,9 @@ public class Window {
 
     private void addAction()
     {
-        String imageName = entryField.getItem().toString();
-        MicrosoftProcess process = new MicrosoftProcess(imageName);
+        String processName = (String)entryField.getItem();
         try {
-            dossier.addCriterion(process);
+            proposal.addCriterion(processName);
         } catch (InstanceAlreadyExistsException e) {
             Toolkit.getDefaultToolkit().beep();
             entryField.selectAll();
@@ -100,16 +99,14 @@ public class Window {
 
     private void removeAction()
     {
-        String imageName = entryField.getItem().toString();
-        System.out.println("Image Name: "+imageName);
-        MicrosoftProcess process = new MicrosoftProcess(imageName);
+        String processName = (String)entryField.getItem();
         try {
-            dossier.removeCriterion(process);
+            proposal.removeCriterion(processName);
         } catch (NoSuchElementException e) {
             Toolkit.getDefaultToolkit().beep();
-        } finally {
-            entryField.setItem("");
+            entryField.selectAll();
         }
+        entryField.setItem("");
     }
 
     public void powerAction()
@@ -129,8 +126,8 @@ public class Window {
         public void valueChanged(ListSelectionEvent e) {
             if (e.getValueIsAdjusting()) // another event is sent when user lets go of mouse, this lets me ignore it
             {
-                MicrosoftProcess process = criteriaList.getSelectedValue();
-                entryField.setItem(process);
+                String processName = criteriaList.getSelectedValue();
+                entryField.setItem(processName);
             }
         }
     };

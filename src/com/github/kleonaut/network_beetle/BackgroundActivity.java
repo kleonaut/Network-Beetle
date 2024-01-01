@@ -7,15 +7,14 @@ import java.io.IOException;
 
 public class BackgroundActivity implements ActionListener {
 
-    private final NetworkShell netsh = new NetworkShell();
+    private final NetShell netsh = new NetShell();
     private final Tasklist tasklist = new Tasklist();
-    private final Dossier dossier;
+    private final Protocol protocol;
     private final Timer timer;
 
-    BackgroundActivity(Dossier dossier)
+    BackgroundActivity(Protocol protocol)
     {
-        this.dossier = dossier;
-
+        this.protocol = protocol;
         // ----------------- Timer
         timer = new Timer(1000, this);
         timer.setInitialDelay(0);
@@ -33,10 +32,11 @@ public class BackgroundActivity implements ActionListener {
     public void actionPerformed(ActionEvent event)
     {
         try {
-            NetworkProfile profile = dossier.fallbackProfile();
-            for (int i = 0; i < dossier.criteriaSize(); i++)
-                if (tasklist.hasProcess(dossier.criterion(i))) {
-                    profile = dossier.targetProfile();
+            NetProfile profile = protocol.getFallback();
+            String[] criteria = protocol.criteria();
+            for (int i = 0; i < criteria.length; i++)
+                if (tasklist.hasProcessName(criteria[i])) {
+                    profile = protocol.getTarget();
                     break;
                 }
             netsh.setProfile(profile); // does nothing if is already in that profile

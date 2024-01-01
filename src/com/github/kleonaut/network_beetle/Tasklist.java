@@ -6,9 +6,9 @@ import java.io.InputStreamReader;
 import java.util.Scanner;
 
 public class Tasklist {
-    boolean hasProcess(MicrosoftProcess process) throws IOException
+    boolean hasProcessName(String processName) throws IOException
     {
-        String command = "tasklist /fi \"imagename eq "+process.IMAGE_NAME+"\" /fo csv /nh";
+        String command = "tasklist /fi \"imagename eq "+processName+"\" /fo csv /nh";
         Process tasklistProcess = Runtime.getRuntime().exec(command);
         try (BufferedReader in = new BufferedReader(new InputStreamReader(tasklistProcess.getInputStream()));
              Scanner scanner = new Scanner(in.readLine()))

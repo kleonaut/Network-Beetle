@@ -1,7 +1,6 @@
 package com.github.kleonaut.network_beetle;
 
 import javax.imageio.ImageIO;
-import javax.swing.Timer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -28,9 +27,8 @@ public class App
 
     public App()
     {
-        Dossier dossier = new Dossier();
-        window = new Window(this, dossier);
-        activity = new BackgroundActivity(dossier);
+        window = new Window(this);
+        activity = new BackgroundActivity(new Protocol());
 
         // ---------------- Popup Menu
         PopupMenu menu = new PopupMenu();
