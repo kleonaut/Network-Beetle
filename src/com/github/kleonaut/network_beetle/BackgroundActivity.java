@@ -16,7 +16,7 @@ public class BackgroundActivity implements ActionListener {
     {
         this.protocol = protocol;
         // ----------------- Timer
-        timer = new Timer(1000, this);
+        timer = new Timer(2000, this);
         timer.setInitialDelay(0);
     }
 
@@ -33,13 +33,10 @@ public class BackgroundActivity implements ActionListener {
     {
         try {
             NetProfile profile = protocol.getFallback();
-            String[] criteria = protocol.criteria();
-            for (int i = 0; i < criteria.length; i++)
-                if (tasklist.hasProcessName(criteria[i])) {
-                    profile = protocol.getTarget();
-                    break;
-                }
-            netsh.setProfile(profile); // does nothing if is already in that profile
+            if (tasklist.isMatchingCriteria(protocol.criteria()))
+                netsh.setProfile(protocol.getTarget());
+            else
+                netsh.setProfile(protocol.getFallback()); // does nothing if is already in that profile
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
