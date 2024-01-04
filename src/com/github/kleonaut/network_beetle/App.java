@@ -1,5 +1,7 @@
 package com.github.kleonaut.network_beetle;
 
+import com.github.kleonaut.network_beetle.regimen.Regimen;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -11,8 +13,7 @@ public class App
 {
     public final String NAME = "Network Beetle";
 
-    private final RegimenScout2 scout;
-    private final NetShell netShell = new NetShell();
+    private final RegimenUpdater updater;
     private boolean isPowered;
 
     private final Window window = new Window(this);
@@ -26,18 +27,18 @@ public class App
     public App()
     {
         // ---------------- Regimens
-        List<String> conditionTasks = new ArrayList<>();
-        conditionTasks.add("calculatorapp.exe");
-        conditionTasks.add("mspaint.exe");
-        conditionTasks.add("notepad.exe");
-        conditionTasks.add("sublime_text.exe");
-        conditionTasks.add("obsidian.exe");
-        conditionTasks.add("taskmgr.exe");
-        regimens.add(new Regimen("Productivity", new NetProfile("Motorolla"), conditionTasks));
-        regimens.add(new Regimen("Default", NetProfile.OFFLINE, new ArrayList<String>()));
-        regimens = List.copyOf(regimens); // makes it unmodifiable
-        regimen = regimens.getLast();
-        scout = new RegimenScout2(regimens, this);
+//        List<String> conditionTasks = new ArrayList<>();
+//        conditionTasks.add("calculatorapp.exe");
+//        conditionTasks.add("mspaint.exe");
+//        conditionTasks.add("notepad.exe");
+//        conditionTasks.add("sublime_text.exe");
+//        conditionTasks.add("obsidian.exe");
+//        conditionTasks.add("taskmgr.exe");
+//        regimens.add(new Regimen("Productivity", new NetProfile("Motorolla"), conditionTasks));
+//        regimens.add(new Regimen("Default", NetProfile.OFFLINE, new ArrayList<String>()));
+//        regimens = List.copyOf(regimens); // makes it unmodifiable
+//        regimen = regimens.getLast();
+        updater = new RegimenUpdater(regimens, this);
 
         // ---------------- Popup Menu
         PopupMenu menu = new PopupMenu();
@@ -73,7 +74,7 @@ public class App
         isPowered = !isPowered;
         window.togglePower();
         powerButton.setState(isPowered);
-        scout.togglePower();
+        updater.togglePower();
     }
 
     public void revealWindow() { window.reveal(); }
@@ -88,7 +89,7 @@ public class App
     {
         if (this.regimen != regimen)
         {
-            netShell.setProfile(regimen.netProfile());
+            //netShell.setProfile(regimen.netProfile());
             this.regimen = regimen;
             System.out.println("Setting regimen to "+regimen.name());
         }

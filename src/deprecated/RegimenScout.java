@@ -1,4 +1,7 @@
-package com.github.kleonaut.network_beetle;
+package deprecated;
+
+import com.github.kleonaut.network_beetle.App;
+import com.github.kleonaut.network_beetle.regimen.*;
 
 import javax.swing.SwingWorker;
 import java.util.List;
@@ -23,8 +26,8 @@ public class RegimenScout extends SwingWorker<Regimen, Void>
         for (String task : tasklist.novelTasks())
         {
             for (Regimen regimen : regimens)
-                for (String condition : regimen.conditions())
-                    if (task.equals(condition))
+                for (TaskCondition condition : regimen.conditions())
+                    if (task.equals(condition.task()))
                         return regimen;
         }
         return regimens.getLast(); // last regimen is default

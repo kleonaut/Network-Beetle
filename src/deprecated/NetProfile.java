@@ -1,9 +1,9 @@
-package com.github.kleonaut.network_beetle;
+package deprecated;
 
 // immutable
 public class NetProfile
 {
-    public static final NetProfile OFFLINE = new NetProfile("Disconnect from the Internet");
+    public static final NetProfile OFFLINE = new NetProfile("disconnected");
 
     private final String name;
 

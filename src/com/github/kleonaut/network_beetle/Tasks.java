@@ -1,55 +1,32 @@
 package com.github.kleonaut.network_beetle;
 
-import javax.swing.Timer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class RegimenScout2
+// not thread safe because of Matcher
+// do not call from worker threads
+public class Tasks
 {
     private static final Pattern SYS_PATTERN = Pattern.compile("C:\\\\Windows\\\\");
     private static final Pattern EXE_PATTERN = Pattern.compile("[^\\\\]*\\.exe");
-    private final Matcher exeMatcher = EXE_PATTERN.matcher("");
-    private final Matcher sysMatcher = SYS_PATTERN.matcher("");
-    private final Timer timer = new Timer(2000, e -> updateRegimen());
-    private final List<Regimen> regimens;
-    private final App app;
+    private static final Matcher exeMatcher = EXE_PATTERN.matcher("");
+    private static final Matcher sysMatcher = SYS_PATTERN.matcher("");
 
-    public RegimenScout2(List<Regimen> regimens, App app) {
-        this.regimens = regimens;
-        this.app = app;
-    }
+    private Tasks() {};
 
-    public void togglePower()
+    public static List<String> fetch()
     {
-        if (timer.isRunning()) timer.stop();
-        else timer.restart();
-    }
-
-    public void updateRegimen() {
-        for (String task : fetchTasks())
-            for (Regimen regimen : regimens)
-                for (String condition : regimen.conditions())
-                    if (task.equals(condition))
-                    {
-                        app.setRegimen(regimen);
-                        return;
-                    }
-        app.setRegimen(regimens.getLast()); // last regimen is default
-    }
-
-    private List<String> fetchTasks()
-    {
-        List<String> tasks = new ArrayList<>();
+        List<String> taskNames = new ArrayList<>();
         ProcessHandle[] handles = getHandles();
         for (ProcessHandle handle : handles)
-            tasks.add(taskOf(handle));
-        return tasks;
+            taskNames.add(taskNameOf(handle));
+        return taskNames;
     }
 
-    private ProcessHandle[] getHandles()
+    private static ProcessHandle[] getHandles()
     {
         return ProcessHandle.allProcesses()
                 // processes that have a 'command' property (executable path)
@@ -60,7 +37,7 @@ public class RegimenScout2
                 .toArray(ProcessHandle[]::new);
     }
 
-    private String taskOf(ProcessHandle handle)
+    private static String taskNameOf(ProcessHandle handle)
     {
         // supply full executable path to matcher to parse out just the executable name
         exeMatcher.reset(handle.info().command().get());
@@ -70,11 +47,11 @@ public class RegimenScout2
         throw new MatchException("Match not found", null);
     }
 
-    private ProcessHandle handleOf(String task) throws Exception
+    private static ProcessHandle handleOf(String task) throws Exception
     {
         ProcessHandle[] handles = getHandles();
         for (ProcessHandle handle : handles)
-            if (taskOf(handle).equals(task))
+            if (taskNameOf(handle).equals(task))
                 return handle;
         throw new Exception("Handle with executable name "+task+" not found");
     }
