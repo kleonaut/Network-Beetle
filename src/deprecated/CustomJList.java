@@ -1,4 +1,4 @@
-package com.github.kleonaut.network_beetle;
+package deprecated;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.swing.DefaultListModel;

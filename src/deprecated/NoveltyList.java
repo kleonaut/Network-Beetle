@@ -1,4 +1,4 @@
-package com.github.kleonaut.network_beetle;
+package deprecated;
 
 import java.util.ArrayList;
 import java.util.Iterator;

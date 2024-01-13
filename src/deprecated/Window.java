@@ -1,4 +1,6 @@
-package com.github.kleonaut.network_beetle;
+package deprecated;
+
+import com.github.kleonaut.network_beetle.App;
 
 import javax.swing.*;
 import java.awt.*;
@@ -30,7 +32,7 @@ public class Window {
         removeButton.addActionListener(e -> conditionEditor.removeItem());
 
         powerButton = new JButton("Enable");
-        powerButton.addActionListener(e -> toggleAppPower());
+        powerButton.addActionListener(e -> app.setPowered(!app.isPowered()));
 
         // ---------------- Lay Out GUI
         JPanel panel = new JPanel(new GridBagLayout());
@@ -63,8 +65,6 @@ public class Window {
 
         reveal();
     }
-
-    public void toggleAppPower() { app.togglePower(); }
 
     public void togglePower()
     {

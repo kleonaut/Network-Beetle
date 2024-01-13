@@ -5,62 +5,75 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
 public class NetShell
 {
-
-    public enum Inquery
-    {
-        NEARBY_NETWORKS("netsh wlan show networks", Pattern.compile("(?!SSID.*:\\s\\r\\n)SSID.*:\\s")),
-        ALL_PROFILES("netsh wlan show profiles", Pattern.compile("All User Profile.*:\\s")),
-        CURRENT_PROFILE("netsh wlan show interfaces", Pattern.compile("Profile.*:\\s"));
-
-        public final String COMMAND;
-        public final Pattern IDENTIFIER_PTRN;
-
-        Inquery(String command, Pattern identifier)
-        {
-            this.COMMAND = command;
-            this.IDENTIFIER_PTRN = identifier;
-        }
-    }
-
-    private static final Pattern NEWLINE_PTRN = java.util.regex.Pattern.compile("\\r\\n");
-
     private NetShell() {}
 
-    // supply a null String to disconnect
     // this method is not aware of connection failure
     // to verify connection, first wait a few seconds for connection to be established
     // then use fetchInfo(Inquery.CURRENT_PROFILE)
-    public static void setProfile(String networkProfileName)
+    public static void setProfile(NetProfile profile)
     {
+        if (profile == NetProfile.STAY) return;
         try {
-            if (networkProfileName == null)
+            if (profile == NetProfile.DISCONNECT)
                 Runtime.getRuntime().exec("netsh wlan disconnect");
             else
-                Runtime.getRuntime().exec("netsh wlan connect name=\""+networkProfileName+"\"");
+                Runtime.getRuntime().exec("netsh wlan connect name=\""+profile.name()+"\"");
         } catch (IOException e) { throw new RuntimeException(e); }
     }
 
-    // when inquery = CURRENT_PROFILE this returns a list with one element; that element is the current profile
-        // if the returned list has no elements, the user is currently disconnected
-    public static List<String> fetchInfo(Inquery inquery)
+    // TODO: make this work with hidden networks too
+    public static List<String> fetchNearbyNetworks()
     {
-        List<String> info = new ArrayList<>();
+        return runAndParse("netsh wlan show networks", Rgx.SSID);
+    }
+
+    public static List<NetProfile> fetchAllProfiles()
+    {
+        List<String> results = runAndParse("netsh wlan show profiles", Rgx.ALL_PROFILES);
+        List<NetProfile> profiles = new ArrayList<>();
+        for (String item : results)
+            profiles.add(new NetProfile(item));
+        return profiles;
+    }
+
+    public static NetProfile fetchNowProfile()
+    {
+        List<String> results = runAndParse("netsh wlan show interfaces", Rgx.PROFILE);
+        if (results.isEmpty()) return NetProfile.DISCONNECT;
+        else return new NetProfile(results.getFirst());
+    }
+
+    public static List<NetProfile> fetchNearbyProfiles()
+    {
+        List<NetProfile> nearbyProfiles = new ArrayList<>();
+
+        List<String> networks = fetchNearbyNetworks();
+        List<NetProfile> profiles = fetchAllProfiles();
+        for (String network : networks)
+            for (NetProfile profile : profiles)
+                if (profile.name().equals(network))
+                    nearbyProfiles.add(profile);
+
+        return nearbyProfiles;
+    }
+
+    private static List<String> runAndParse(String command, Rgx RGX)
+    {
+        List<String> results = new ArrayList<>();
         try {
-            Process netshProcess = Runtime.getRuntime().exec(inquery.COMMAND);
+            Process netshProcess = Runtime.getRuntime().exec(command);
             try (
                     InputStream byteIn = netshProcess.getInputStream();
-                    Scanner scanner = new Scanner(byteIn).useDelimiter(NEWLINE_PTRN);
+                    Scanner scanner = new Scanner(byteIn).useDelimiter(RGX.NEWLINE.get());
             ) {
-                // search for "Profile : " pattern with no limit (horizon=0)
-                // if it doesn't exit then PC is not connected to any profile
-                while (scanner.findWithinHorizon(inquery.IDENTIFIER_PTRN, 0) != null)
-                    info.add(scanner.next().trim());
+                // search for something like "Profile : " pattern with no limit (horizon=0)
+                while (scanner.findWithinHorizon(RGX.get(), 0) != null)
+                    results.add(scanner.next().trim());
             }
         } catch (IOException e) { throw new RuntimeException(e); }
-        return List.copyOf(info);
+        return List.copyOf(results);
     }
 }

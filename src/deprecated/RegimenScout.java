@@ -1,7 +1,7 @@
 package deprecated;
 
 import com.github.kleonaut.network_beetle.App;
-import com.github.kleonaut.network_beetle.regimen.*;
+import deprecated.regimen.*;
 
 import javax.swing.SwingWorker;
 import java.util.List;

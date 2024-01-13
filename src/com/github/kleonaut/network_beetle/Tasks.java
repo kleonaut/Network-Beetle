@@ -4,16 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 // not thread safe because of Matcher
 // do not call from worker threads
 public class Tasks
 {
-    private static final Pattern SYS_PATTERN = Pattern.compile("C:\\\\Windows\\\\");
-    private static final Pattern EXE_PATTERN = Pattern.compile("[^\\\\]*\\.exe");
-    private static final Matcher exeMatcher = EXE_PATTERN.matcher("");
-    private static final Matcher sysMatcher = SYS_PATTERN.matcher("");
+    // ignore the idea of hooking into the process; not relevant rn and might not require caching handle reference at all
+    // TODO: try command().startInstant() to filter out all tasks that have no start time
+        // such tasks can't be possibly useful; maybe good in combination with sys filter, or instead
+    // TODO: use stream.findFirst() to compact all of this
+    // TODO: initialize matchers inside fetch function to make this thread safe yet optimized
+    private static final Matcher exeMatcher = Rgx.EXE_FILE.get().matcher("");
+    private static final Matcher winMatcher = Rgx.WINDOWS_DIR.get().matcher("");
 
     private Tasks() {};
 
@@ -32,7 +34,7 @@ public class Tasks
                 // processes that have a 'command' property (executable path)
                 .filter(handle -> handle.info().command().isPresent())
                 // processes that are not in 'C:\Windows\' directory
-                .filter(handle -> !sysMatcher.reset(handle.info().command().get()).find())
+                .filter(handle -> !winMatcher.reset(handle.info().command().get()).find())
                 // convert stream to array
                 .toArray(ProcessHandle[]::new);
     }

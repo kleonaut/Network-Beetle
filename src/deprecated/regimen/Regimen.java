@@ -1,6 +1,4 @@
-package com.github.kleonaut.network_beetle.regimen;
-
-import deprecated.NetProfile;
+package deprecated.regimen;
 
 import java.util.List;
 
@@ -8,13 +6,13 @@ import java.util.List;
 public class Regimen
 {
     private final String name;
-    private final NetProfile netProfile;
+    private final String netProfile;
     private final List<TaskCondition> conditions;
     private final int enterDelay = 0;
     private final int exitDelay = 0;
     private final boolean willNotifyOnEnter = false;
 
-    public Regimen(String name, NetProfile profile, List<TaskCondition> conditions)
+    public Regimen(String name, String profile, List<TaskCondition> conditions)
     {
         this.name = name;
         this.netProfile = profile;
@@ -22,7 +20,7 @@ public class Regimen
     }
 
     public String name() { return name; }
-    public NetProfile netProfile() { return netProfile; }
+    public String netProfile() { return netProfile; }
     public List<TaskCondition> conditions() { return List.copyOf(conditions); }
 
 

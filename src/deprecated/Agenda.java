@@ -1,6 +1,6 @@
-package com.github.kleonaut.network_beetle;
+package deprecated;
 
-import com.github.kleonaut.network_beetle.regimen.*;
+import deprecated.regimen.*;
 
 import java.util.ArrayList;
 import java.util.Collection;

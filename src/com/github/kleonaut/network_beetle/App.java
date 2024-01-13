@@ -1,97 +1,61 @@
 package com.github.kleonaut.network_beetle;
 
-import com.github.kleonaut.network_beetle.regimen.Regimen;
+import javax.swing.Timer;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-public class App
+public class App implements Powerable
 {
-    public final String NAME = "Network Beetle";
+    public static final String NAME = "Network Beetle";
 
-    private final RegimenUpdater updater;
-    private boolean isPowered;
+    private final PowerableGroup powerableGroup = new PowerableGroup();
+    private final DisposableGroup disposableGroup = new DisposableGroup();
+    private final TunableGroup tunableGroup;
 
-    private final Window window = new Window(this);
-    private final SystemTray tray = SystemTray.getSystemTray();
-    private final TrayIcon trayIcon;
-    private final CheckboxMenuItem powerButton;
+    private final Record record;
+    private final OverviewWindow window;
+    private final Tray tray;
 
-    private List<Regimen> regimens = new ArrayList<>();
-    private Regimen regimen;
+    private final Timer scoutTimer = new Timer(2000, e -> scout());
+    //private final Timer verifyTimer = new Timer(5000, e -> verify());
 
     public App()
     {
-        // ---------------- Regimens
-//        List<String> conditionTasks = new ArrayList<>();
-//        conditionTasks.add("calculatorapp.exe");
-//        conditionTasks.add("mspaint.exe");
-//        conditionTasks.add("notepad.exe");
-//        conditionTasks.add("sublime_text.exe");
-//        conditionTasks.add("obsidian.exe");
-//        conditionTasks.add("taskmgr.exe");
-//        regimens.add(new Regimen("Productivity", new NetProfile("Motorolla"), conditionTasks));
-//        regimens.add(new Regimen("Default", NetProfile.OFFLINE, new ArrayList<String>()));
-//        regimens = List.copyOf(regimens); // makes it unmodifiable
-//        regimen = regimens.getLast();
-        updater = new RegimenUpdater(regimens, this);
+        record = new Record();
+        window = new OverviewWindow(powerableGroup, record);
+        tray = new Tray(window, powerableGroup, disposableGroup);
 
-        // ---------------- Popup Menu
-        PopupMenu menu = new PopupMenu();
-        MenuItem revealButton = new MenuItem("Open");
-        revealButton.addActionListener(e -> revealWindow());
-        MenuItem quitButton = new MenuItem("Quit "+NAME);
-        quitButton.addActionListener(e -> quitApp());
-        powerButton = new CheckboxMenuItem("Enabled");
-        powerButton.setState(true);
-        powerButton.addItemListener(e -> togglePower());
-        menu.add(revealButton);
-        menu.add(powerButton);
-        menu.addSeparator();
-        menu.add(quitButton);
+        tunableGroup = new TunableGroup(record);
+        tunableGroup.add(window);
 
-        // ----------------- Tray Icon
-        try {
-            BufferedImage image = ImageIO.read(Main.class.getResource("/resources/icon.png"));
-            trayIcon = new TrayIcon(image, NAME, menu);
-            trayIcon.addActionListener(e -> revealWindow());
-            tray.add(trayIcon);
-        } catch (IOException | AWTException e)
-        {
-            throw new RuntimeException(e);
-        }
+        scoutTimer.setRepeats(false);
+        //verifyTimer.setRepeats(false);
 
-        // ----------------- Start
-        togglePower();
+        // objects will be disposed in this order
+        disposableGroup.add(tray);
+        disposableGroup.add(window);
+
+        // objects will be powered in this order
+        powerableGroup.add(tray);
+        powerableGroup.add(window);
+        powerableGroup.add(this);
+
+        powerableGroup.turnOn();
     }
 
-    public void togglePower()
+    public void scout()
     {
-        isPowered = !isPowered;
-        window.togglePower();
-        powerButton.setState(isPowered);
-        updater.togglePower();
+        int i = (int)(Math.random()*2);
+        System.out.println(i);
+        tunableGroup.setTune(i);
+        scoutTimer.start();
     }
 
-    public void revealWindow() { window.reveal(); }
-
-    public void quitApp()
+    @Override
+    public void setPowered(boolean flag)
     {
-        tray.remove(trayIcon);
-        window.kill();
+        if (flag)
+            scoutTimer.start();
+        else
+            scoutTimer.stop();
     }
 
-    public void setRegimen(Regimen regimen)
-    {
-        if (this.regimen != regimen)
-        {
-            //netShell.setProfile(regimen.netProfile());
-            this.regimen = regimen;
-            System.out.println("Setting regimen to "+regimen.name());
-        }
-    }
 }

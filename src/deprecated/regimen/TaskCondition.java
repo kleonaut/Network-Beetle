@@ -1,4 +1,4 @@
-package com.github.kleonaut.network_beetle.regimen;
+package deprecated.regimen;
 
 // immutable
 public class TaskCondition

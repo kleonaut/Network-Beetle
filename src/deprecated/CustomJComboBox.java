@@ -1,4 +1,6 @@
-package com.github.kleonaut.network_beetle;
+package deprecated;
+
+import deprecated.CustomJList;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.swing.DefaultComboBoxModel;
