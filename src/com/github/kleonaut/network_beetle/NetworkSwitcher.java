@@ -20,6 +20,7 @@ public class NetworkSwitcher implements ModeAware
         if (!Networks.fetchNowProfile().name().equals(nowProfile.name()))
         {
             OverviewFrame.addToLog("Failure to connect to "+nowProfile.name());
+            nowProfile = null;
             powerableGroup.turnOff();
         }
     }
@@ -27,22 +28,24 @@ public class NetworkSwitcher implements ModeAware
     @Override
     public void setMode(Mode mode)
     {
+        if (nowProfile == mode.netProfile()) return;
         nowProfile = mode.netProfile();
-        Networks.setProfile(mode.netProfile());
+        Networks.setProfile(nowProfile);
 
-        if (mode.netProfile() == NetProfile.DISCONNECT)
+        if (nowProfile == NetProfile.STAY)
+        {
+            verificationTimer.stop();
+        }
+        else if (nowProfile == NetProfile.DISCONNECT)
         {
             OverviewFrame.addToLog("Disconnecting from the Internet");
             verificationTimer.stop();
         }
-        else if (mode.netProfile() != NetProfile.STAY)
+        else
         {
-            OverviewFrame.addToLog("Connecting to "+mode.netProfile().name());
+            OverviewFrame.addToLog("Connecting to "+nowProfile.name());
             verificationTimer.restart();
         }
-        else
-            verificationTimer.stop();
-
     }
 
     @Override
