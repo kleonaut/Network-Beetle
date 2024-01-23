@@ -41,9 +41,6 @@ public class ModeUpdater implements Powerable
         if (flag)
             timer.start();
         else
-        {
             timer.stop();
-            modeAwareGroup.setModeless();
-        }
     }
 }

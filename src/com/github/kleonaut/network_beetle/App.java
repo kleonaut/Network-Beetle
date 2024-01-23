@@ -28,6 +28,7 @@ public class App
         disposableGroup.add(window);
 
         // objects will be powered in this order
+        powerableGroup.add(modeAwareGroup);
         powerableGroup.add(tray);
         powerableGroup.add(window);
         powerableGroup.add(updater);

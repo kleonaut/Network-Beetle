@@ -3,7 +3,7 @@ package com.github.kleonaut.network_beetle;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ModeAwareGroup
+public class ModeAwareGroup implements Powerable
 {
     private final List<ModeAware> items = new ArrayList<>();
     private Mode nowMode = null;
@@ -23,4 +23,7 @@ public class ModeAwareGroup
         nowMode = null;
         for (ModeAware item : items) item.setModeless();
     }
+
+    @Override
+    public void setPowered(boolean flag) { if (!flag) setModeless(); }
 }
