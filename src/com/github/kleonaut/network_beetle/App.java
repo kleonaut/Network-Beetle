@@ -20,6 +20,7 @@ public class App
         // objects will switch mode in this order
         modeAwareGroup.add(window);
         modeAwareGroup.add(netSwitcher);
+        modeAwareGroup.add(tray);
 
         // objects will be disposed of in this order
         disposableGroup.add(powerableGroup);

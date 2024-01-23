@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-public class Tray implements Powerable, Disposable
+public class Tray implements Powerable, Disposable, ModeAware
 {
     private final CheckboxMenuItem powerButton;
     private final SystemTray systemTray = SystemTray.getSystemTray();
@@ -42,4 +42,10 @@ public class Tray implements Powerable, Disposable
 
     @Override
     public void setPowered(boolean flag) { powerButton.setState(flag); }
+
+    @Override
+    public void setMode(Mode mode) { trayIcon.setToolTip(App.NAME+" "+mode.name()); }
+
+    @Override
+    public void setModeless() { trayIcon.setToolTip(App.NAME); }
 }
