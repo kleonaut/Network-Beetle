@@ -4,14 +4,16 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConditionDialog
+public class ConditionDialog extends JDialog
 {
     // TODO: list width changes when contents change because of button text update, list width should be fixed
 
-    private final JDialog dialog;
     private final JList<String> nominatedCondtions;
     private final JList<String> possibleConditions;
     private final ModeDialog returnWindow;
@@ -19,20 +21,22 @@ public class ConditionDialog
     private final JButton transferButton;
     private JList<String> targetList;
     private JList<String> sourceList;
+    private static final Timer timer = new Timer(2000, null);
 
-    private boolean isSelecting;
+    private boolean isLocked;
+    private boolean isAdding;
 
-    ConditionDialog(JDialog owner, ModeDialog returnWindow, List<String> nowConditions)
+    ConditionDialog(JDialog owner, ModeDialog returnWindow, List<String> assignedConditions)
     {
+        super(owner, "Assign Conditions", true);
         this.returnWindow = returnWindow;
-        dialog = new JDialog(owner, "Assign Conditions", true);
 
         nominatedCondtions = new JList<>(new DefaultListModel<>());
         nominatedCondtions.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         nominatedCondtions.addListSelectionListener(selectAction);
         DefaultListModel<String>listModel = (DefaultListModel<String>)nominatedCondtions.getModel();
-        for (String condition : nowConditions)
-            listModel.addElement(condition);
+        for (String condition : assignedConditions)
+            listModel.addElement(" " + condition);
 
         transferButton = new JButton("=");
         transferButton.setEnabled(false);
@@ -41,9 +45,8 @@ public class ConditionDialog
         possibleConditions = new JList<>(new DefaultListModel<>());
         possibleConditions.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         possibleConditions.addListSelectionListener(selectAction);
-        listModel = (DefaultListModel<String>)possibleConditions.getModel();
-        listModel.addElement("mspaint.exe");
-        listModel.addElement("notepad.exe");
+        possibleConditions.setEnabled(false);
+        ((DefaultListModel<String>)possibleConditions.getModel()).addElement(" Fetching...");
 
         JButton confirmButton = new JButton("Confirm");
         confirmButton.addActionListener(e -> confirmChanges());
@@ -60,27 +63,60 @@ public class ConditionDialog
         panel.add(confirmButton,
                   new Constraints(0, 1).width(3).anchor(6).get());
 
-        dialog.setContentPane(panel);
-        dialog.setSize(450, 300);
-        dialog.setLocationRelativeTo(owner);
-        dialog.setVisible(true);
+        setContentPane(panel);
+        setSize(450, 300);
+        setLocationRelativeTo(owner);
+
+        timer.addActionListener(e -> updateConditions());
+        addWindowListener(new WindowAdapter()
+        {
+            @Override
+            public void windowClosing(WindowEvent e)
+            {
+                timer.stop();
+                for (ActionListener listener : timer.getActionListeners())
+                    timer.removeActionListener(listener);
+            }
+        });
+        timer.setInitialDelay(700);
+        timer.start();
+
+        setVisible(true);
+    }
+
+    public void updateConditions()
+    {
+        isLocked = true;
+        possibleConditions.setEnabled(true);
+
+        String selectedCondition = possibleConditions.getSelectedValue();
+        int selectedIndex = -1;
+
+        DefaultListModel<String>listModel = (DefaultListModel<String>)possibleConditions.getModel();
+        listModel.clear();
+
+        for (String task : Tasks.fetchNoRepeats())
+            listModel.addElement(" " + task);
+
+        for (int i = 0; i < listModel.size(); i++)
+            if (listModel.get(i).equals(selectedCondition))
+                selectedIndex = i;
+
+        possibleConditions.setSelectedIndex(selectedIndex);
+        isLocked = false;
     }
 
     public void performTransfer()
     {
-        if (sourceList == null || targetList == null) return;
-
-        String item = sourceList.getSelectedValue();
-        DefaultListModel<String> model = (DefaultListModel<String>)sourceList.getModel();
-        model.removeElementAt(sourceList.getSelectedIndex());
-
-        model = (DefaultListModel<String>)targetList.getModel();
-        model.addElement(item); // NOTE: when target list has no items, this line invokes target's ListSelectionListener
-
-        sourceList = null;
-        targetList = null;
+        isLocked = true;
+        if (isAdding)
+            // NOTE: when nominatedCondtions has no items, this line invokes its ListSelectionListener
+            ((DefaultListModel<String>)nominatedCondtions.getModel()).addElement(possibleConditions.getSelectedValue());
+        else
+            ((DefaultListModel<String>)nominatedCondtions.getModel()).removeElementAt(nominatedCondtions.getSelectedIndex());
         transferButton.setText("=");
         transferButton.setEnabled(false);
+        isLocked = false;
     }
 
     ListSelectionListener selectAction = new ListSelectionListener()
@@ -89,22 +125,34 @@ public class ConditionDialog
         public void valueChanged(ListSelectionEvent e)
         {
             if (e.getValueIsAdjusting()) return;
-            if (isSelecting) return;
-            isSelecting = true;
-            sourceList = (JList<String>)e.getSource();
-            if (sourceList == nominatedCondtions)
+            if (isLocked) return;
+            isLocked = true;
+            if (e.getSource() == nominatedCondtions)
             {
-                targetList = possibleConditions;
+                possibleConditions.clearSelection();
+                isAdding = false;
                 transferButton.setText(">");
             }
             else
             {
-                targetList = nominatedCondtions;
+                nominatedCondtions.clearSelection();
+
+                // disable transfer button if item is already in nominated conditions
+                DefaultListModel<String> list = (DefaultListModel<String>)nominatedCondtions.getModel();
+                for (int i = 0; i < list.size(); i++)
+                    if(list.get(i).equals(possibleConditions.getSelectedValue()))
+                    {
+                        transferButton.setEnabled(false);
+                        transferButton.setText("=");
+                        isLocked = false;
+                        return;
+                    }
+
+                isAdding = true;
                 transferButton.setText("<");
             }
-            targetList.clearSelection();
             transferButton.setEnabled(true);
-            isSelecting = false;
+            isLocked = false;
         }
     };
 
@@ -112,8 +160,8 @@ public class ConditionDialog
     {
         List<String> conditions = new ArrayList<>();
         for (int i = 0; i < nominatedCondtions.getModel().getSize(); i++)
-            conditions.add(nominatedCondtions.getModel().getElementAt(i));
+            conditions.add(nominatedCondtions.getModel().getElementAt(i).trim());
         returnWindow.setConditions(conditions);
-        dialog.dispose();
+        dispose();
     }
 }
