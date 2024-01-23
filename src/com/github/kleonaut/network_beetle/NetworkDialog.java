@@ -10,15 +10,15 @@ public class NetworkDialog extends JDialog
 {
     private final JTextArea nominatedNetwork;
     private final JList<String> networkList;
-    private final ModeDialog returnWindow;
+    private final ModeDialog owner;
     private static final Timer timer = new Timer(2000, null);
 
-    NetworkDialog(JDialog owner, ModeDialog returnWindow, NetProfile assignedProfile)
+    NetworkDialog(ModeDialog owner, NetProfile assignedProfile)
     {
         super(owner, "Assign Network Profile", true);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        this.returnWindow = returnWindow;
+        this.owner = owner;
 
         nominatedNetwork = new JTextArea(" "+assignedProfile.name());
         nominatedNetwork.setEditable(false);
@@ -29,6 +29,9 @@ public class NetworkDialog extends JDialog
         networkList.addListSelectionListener(e -> nominateSelection());
         networkList.setEnabled(false);
         ((DefaultListModel<String>)networkList.getModel()).addElement(" Fetching...");
+        JScrollPane networkListPane = new JScrollPane(networkList);
+        networkListPane.getVerticalScrollBar().setUnitIncrement(5);
+        networkListPane.getHorizontalScrollBar().setUnitIncrement(5);
 
         JButton confirmButton = new JButton("Confirm");
         confirmButton.addActionListener(e -> confirmSelection());
@@ -38,13 +41,13 @@ public class NetworkDialog extends JDialog
 
         panel.add(nominatedNetwork,
                   new Constraints(0, 0).stretch().insets(5, 10, 5, 5).get());
-        panel.add(networkList,
+        panel.add(networkListPane,
                   new Constraints(0, 1).stretch().grow().get());
         panel.add(confirmButton,
                   new Constraints(0, 2).anchor(6).get());
 
         setContentPane(panel);
-        setSize(230, 250);
+        setSize(300, 250);
         setLocationRelativeTo(owner);
 
         timer.addActionListener(e -> updateNetworkList());
@@ -89,7 +92,7 @@ public class NetworkDialog extends JDialog
     public void nominateSelection() { nominatedNetwork.setText(networkList.getSelectedValue()); }
     public void confirmSelection()
     {
-        returnWindow.setNetwork(new NetProfile(nominatedNetwork.getText().trim()));
+        owner.setNetwork(new NetProfile(nominatedNetwork.getText().trim()));
         dispose();
     }
 }

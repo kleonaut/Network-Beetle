@@ -17,7 +17,7 @@ public class Tasks
     private static final Matcher exeMatcher = Regex.EXE_FILE.get().matcher("");
     private static final Matcher winMatcher = Regex.WINDOWS_DIR.get().matcher("");
 
-    private Tasks() {};
+    private Tasks() {}
 
     public static List<String> fetch()
     {

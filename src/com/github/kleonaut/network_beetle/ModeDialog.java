@@ -4,9 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
-public class ModeDialog
+public class ModeDialog extends JDialog
 {
-    private final JDialog dialog;
     private final JTextArea networkField;
     private final JTextArea conditionField;
     private final Mode mode;
@@ -14,11 +13,11 @@ public class ModeDialog
 
     ModeDialog(Frame owner, Mode mode, boolean isDefaultMode, ModeAwareGroup modeGroup)
     {
+        super(owner, mode.name()+" Details", true);
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
         this.mode = mode;
         this.modeGroup = modeGroup;
-
-        dialog = new JDialog(owner, mode.name()+" Details", true);
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
         networkField = new JTextArea(" "+ mode.netProfile().name());
         networkField.setEditable(false);
@@ -31,6 +30,9 @@ public class ModeDialog
         conditionField.setText(stringFromList(mode.conditions()));
         conditionField.setEditable(false);
         conditionField.setFocusable(false);
+        JScrollPane conditionPane = new JScrollPane(conditionField);
+        conditionPane.getVerticalScrollBar().setUnitIncrement(5);
+        conditionPane.getHorizontalScrollBar().setUnitIncrement(5);
 
         JButton conditionEditButton = new JButton("Edit");
         if (isDefaultMode)
@@ -45,18 +47,18 @@ public class ModeDialog
                   new Constraints(0, 0).stretch().get());
         panel.add(networkEditButton,
                   new Constraints(1, 0).get());
-        panel.add(conditionField,
+        panel.add(conditionPane,
                   new Constraints(0, 1).stretch().grow().get());
         panel.add(conditionEditButton,
                   new Constraints(1, 1).anchor(8).get());
 
-        dialog.setContentPane(panel);
-        dialog.setSize(270, 280);
-        dialog.setLocationRelativeTo(owner);
-        dialog.setVisible(true);
+        setContentPane(panel);
+        setSize(270, 280);
+        setLocationRelativeTo(owner);
+        setVisible(true);
     }
 
-    public void openNetworkDialog() { new NetworkDialog(dialog, this, mode.netProfile()); }
+    public void openNetworkDialog() { new NetworkDialog(this, mode.netProfile()); }
     public void setNetwork(NetProfile netProfile)
     {
         mode.setNetProfile(netProfile);
@@ -64,7 +66,7 @@ public class ModeDialog
         modeGroup.setModeless();
     }
 
-    public void openConditionDialog() { new ConditionDialog(dialog, this, mode.conditions()); }
+    public void openConditionDialog() { new ConditionDialog(this, mode.conditions()); }
     public void setConditions(List<String> conditions)
     {
         mode.setConditions(conditions);

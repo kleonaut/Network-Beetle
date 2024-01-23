@@ -16,20 +16,18 @@ public class ConditionDialog extends JDialog
 
     private final JList<String> nominatedCondtions;
     private final JList<String> possibleConditions;
-    private final ModeDialog returnWindow;
+    private final ModeDialog owner;
 
     private final JButton transferButton;
-    private JList<String> targetList;
-    private JList<String> sourceList;
     private static final Timer timer = new Timer(2000, null);
 
     private boolean isLocked;
     private boolean isAdding;
 
-    ConditionDialog(JDialog owner, ModeDialog returnWindow, List<String> assignedConditions)
+    ConditionDialog(ModeDialog owner, List<String> assignedConditions)
     {
         super(owner, "Assign Conditions", true);
-        this.returnWindow = returnWindow;
+        this.owner = owner;
 
         nominatedCondtions = new JList<>(new DefaultListModel<>());
         nominatedCondtions.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -37,6 +35,9 @@ public class ConditionDialog extends JDialog
         DefaultListModel<String>listModel = (DefaultListModel<String>)nominatedCondtions.getModel();
         for (String condition : assignedConditions)
             listModel.addElement(" " + condition);
+        JScrollPane nominatedPane = new JScrollPane(nominatedCondtions);
+        nominatedPane.getVerticalScrollBar().setUnitIncrement(5);
+        nominatedPane.getHorizontalScrollBar().setUnitIncrement(5);
 
         transferButton = new JButton("=");
         transferButton.setEnabled(false);
@@ -47,6 +48,9 @@ public class ConditionDialog extends JDialog
         possibleConditions.addListSelectionListener(selectAction);
         possibleConditions.setEnabled(false);
         ((DefaultListModel<String>)possibleConditions.getModel()).addElement(" Fetching...");
+        JScrollPane possiblePane = new JScrollPane(possibleConditions);
+        possiblePane.getVerticalScrollBar().setUnitIncrement(5);
+        possiblePane.getHorizontalScrollBar().setUnitIncrement(5);
 
         JButton confirmButton = new JButton("Confirm");
         confirmButton.addActionListener(e -> confirmChanges());
@@ -54,11 +58,11 @@ public class ConditionDialog extends JDialog
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
-        panel.add(nominatedCondtions,
+        panel.add(nominatedPane,
                   new Constraints(0, 0).stretch().grow().get());
         panel.add(transferButton,
                   new Constraints(1, 0).get());
-        panel.add(possibleConditions,
+        panel.add(possiblePane,
                   new Constraints(2, 0).stretch().grow().get());
         panel.add(confirmButton,
                   new Constraints(0, 1).width(3).anchor(6).get());
@@ -161,7 +165,7 @@ public class ConditionDialog extends JDialog
         List<String> conditions = new ArrayList<>();
         for (int i = 0; i < nominatedCondtions.getModel().getSize(); i++)
             conditions.add(nominatedCondtions.getModel().getElementAt(i).trim());
-        returnWindow.setConditions(conditions);
+        owner.setConditions(conditions);
         dispose();
     }
 }
