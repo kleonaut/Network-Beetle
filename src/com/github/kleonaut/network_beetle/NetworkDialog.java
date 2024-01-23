@@ -92,7 +92,13 @@ public class NetworkDialog extends JDialog
     public void nominateSelection() { nominatedNetwork.setText(networkList.getSelectedValue()); }
     public void confirmSelection()
     {
-        owner.setNetwork(new NetProfile(nominatedNetwork.getText().trim()));
+        String selection = nominatedNetwork.getText().trim();
+        if (selection.equals(NetProfile.DISCONNECT.name()))
+            owner.setNetwork(NetProfile.DISCONNECT);
+        else if (selection.equals(NetProfile.STAY.name()))
+            owner.setNetwork(NetProfile.STAY);
+        else
+            owner.setNetwork(new NetProfile(selection));
         dispose();
     }
 }
