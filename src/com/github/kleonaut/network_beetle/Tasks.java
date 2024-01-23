@@ -28,6 +28,16 @@ public class Tasks
         return taskNames;
     }
 
+    public static List<String> fetchNoRepeats()
+    {
+        List<String> tasks = fetch();
+        for (int i = 0; i < tasks.size(); i++)
+            for (int k = i+1; k < tasks.size(); k++)
+                while (k < tasks.size() && tasks.get(i).equals(tasks.get(k)))
+                    tasks.remove(k);
+        return tasks;
+    }
+
     private static ProcessHandle[] getHandles()
     {
         return ProcessHandle.allProcesses()
