@@ -7,14 +7,14 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConditionEditWindow
+public class ConditionDialog
 {
     // TODO: list width changes when contents change because of button text update, list width should be fixed
 
     private final JDialog dialog;
     private final JList<String> nominatedCondtions;
     private final JList<String> possibleConditions;
-    private final TuneDetailsWindow returnWindow;
+    private final ModeDialog returnWindow;
 
     private final JButton transferButton;
     private JList<String> targetList;
@@ -22,7 +22,7 @@ public class ConditionEditWindow
 
     private boolean isSelecting;
 
-    ConditionEditWindow(JDialog owner, TuneDetailsWindow returnWindow, List<String> nowConditions)
+    ConditionDialog(JDialog owner, ModeDialog returnWindow, List<String> nowConditions)
     {
         this.returnWindow = returnWindow;
         dialog = new JDialog(owner, "Assign Conditions", true);
@@ -42,9 +42,8 @@ public class ConditionEditWindow
         possibleConditions.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         possibleConditions.addListSelectionListener(selectAction);
         listModel = (DefaultListModel<String>)possibleConditions.getModel();
-        listModel.addElement("one.exe");
-        listModel.addElement("two.exe");
-        listModel.addElement("three.exe");
+        listModel.addElement("mspaint.exe");
+        listModel.addElement("notepad.exe");
 
         JButton confirmButton = new JButton("Confirm");
         confirmButton.addActionListener(e -> confirmChanges());

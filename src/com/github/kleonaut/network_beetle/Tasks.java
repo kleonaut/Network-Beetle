@@ -14,8 +14,8 @@ public class Tasks
         // such tasks can't be possibly useful; maybe good in combination with sys filter, or instead
     // TODO: use stream.findFirst() to compact all of this
     // TODO: initialize matchers inside fetch function to make this thread safe yet optimized
-    private static final Matcher exeMatcher = Rgx.EXE_FILE.get().matcher("");
-    private static final Matcher winMatcher = Rgx.WINDOWS_DIR.get().matcher("");
+    private static final Matcher exeMatcher = Regex.EXE_FILE.get().matcher("");
+    private static final Matcher winMatcher = Regex.WINDOWS_DIR.get().matcher("");
 
     private Tasks() {};
 

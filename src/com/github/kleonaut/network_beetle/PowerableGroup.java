@@ -3,15 +3,33 @@ package com.github.kleonaut.network_beetle;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PowerableGroup
+public class PowerableGroup implements Disposable
 {
-    private final List<Powerable> powerables = new ArrayList<>();
+    private final List<Powerable> items = new ArrayList<>();
     private boolean state = false;
 
-    public void add(Powerable powerable) {powerables.add(powerable); }
-    public void turnOff() { state = false;  conduct(); }
-    public void turnOn()  { state = true;   conduct(); }
-    public void toggle()  { state = !state; conduct(); }
+    public void add(Powerable powerable) { items.add(powerable); }
 
-    private void conduct() { for (Powerable item : powerables) item.setPowered(state); }
+    public void turnOff()
+    {
+        if (state == false) return;
+        state = false;
+        for (Powerable item : items) item.setPowered(false);
+    }
+
+    public void turnOn()
+    {
+        if (state == true) return;
+        state = true;
+        for (Powerable item : items) item.setPowered(true);
+    }
+
+    public void toggle()
+    {
+        state = !state;
+        for (Powerable item : items) item.setPowered(state);
+    }
+
+    @Override
+    public void dispose() { turnOff(); }
 }

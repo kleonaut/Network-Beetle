@@ -2,7 +2,7 @@ package com.github.kleonaut.network_beetle;
 
 import java.util.regex.Pattern;
 
-public enum Rgx
+public enum Regex
 {
     NEWLINE     (Pattern.compile("\\r\\n")),
     SSID        (Pattern.compile("(?!SSID.*:\\s\\r\\n)SSID.*:\\s")),
@@ -14,5 +14,5 @@ public enum Rgx
     public Pattern get() { return pattern; }
 
     private final Pattern pattern;
-    Rgx(Pattern pattern) { this.pattern = pattern; }
+    Regex(Pattern pattern) { this.pattern = pattern; }
 }

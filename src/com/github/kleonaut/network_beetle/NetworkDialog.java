@@ -3,14 +3,14 @@ package com.github.kleonaut.network_beetle;
 import javax.swing.*;
 import java.awt.*;
 
-public class NetworkEditWindow
+public class NetworkDialog
 {
     private final JDialog dialog;
     private final JTextArea nominatedNetwork;
     private final JList<String> networkList;
-    private final TuneDetailsWindow returnWindow;
+    private final ModeDialog returnWindow;
 
-    NetworkEditWindow(JDialog owner, TuneDetailsWindow returnWindow, NetProfile nowProfile)
+    NetworkDialog(JDialog owner, ModeDialog returnWindow, NetProfile nowProfile)
     {
         this.returnWindow = returnWindow;
         dialog = new JDialog(owner, "Assign Network Profile", true);

@@ -11,7 +11,7 @@ public class Tray implements Powerable, Disposable
     private final SystemTray systemTray = SystemTray.getSystemTray();
     private final TrayIcon trayIcon;
 
-    Tray(OverviewWindow window, PowerableGroup powerableGroup, DisposableGroup disposableGroup)
+    Tray(OverviewFrame window, PowerableGroup powerableGroup, DisposableGroup disposableGroup)
     {
         PopupMenu menu = new PopupMenu();
         MenuItem revealButton = new MenuItem("Open");

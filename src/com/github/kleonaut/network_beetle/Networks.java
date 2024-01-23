@@ -6,13 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class NetShell
+public class Networks
 {
-    private NetShell() {}
 
-    // this method is not aware of connection failure
-    // to verify connection, first wait a few seconds for connection to be established
-    // then use fetchInfo(Inquery.CURRENT_PROFILE)
     public static void setProfile(NetProfile profile)
     {
         if (profile == NetProfile.STAY) return;
@@ -27,12 +23,12 @@ public class NetShell
     // TODO: make this work with hidden networks too
     public static List<String> fetchNearbyNetworks()
     {
-        return runAndParse("netsh wlan show networks", Rgx.SSID);
+        return runAndParse("netsh wlan show networks", Regex.SSID);
     }
 
     public static List<NetProfile> fetchAllProfiles()
     {
-        List<String> results = runAndParse("netsh wlan show profiles", Rgx.ALL_PROFILES);
+        List<String> results = runAndParse("netsh wlan show profiles", Regex.ALL_PROFILES);
         List<NetProfile> profiles = new ArrayList<>();
         for (String item : results)
             profiles.add(new NetProfile(item));
@@ -41,7 +37,7 @@ public class NetShell
 
     public static NetProfile fetchNowProfile()
     {
-        List<String> results = runAndParse("netsh wlan show interfaces", Rgx.PROFILE);
+        List<String> results = runAndParse("netsh wlan show interfaces", Regex.PROFILE);
         if (results.isEmpty()) return NetProfile.DISCONNECT;
         else return new NetProfile(results.getFirst());
     }
@@ -60,17 +56,17 @@ public class NetShell
         return nearbyProfiles;
     }
 
-    private static List<String> runAndParse(String command, Rgx RGX)
+    private static List<String> runAndParse(String command, Regex rgx)
     {
         List<String> results = new ArrayList<>();
         try {
             Process netshProcess = Runtime.getRuntime().exec(command);
             try (
                     InputStream byteIn = netshProcess.getInputStream();
-                    Scanner scanner = new Scanner(byteIn).useDelimiter(RGX.NEWLINE.get());
+                    Scanner scanner = new Scanner(byteIn).useDelimiter(rgx.NEWLINE.get());
             ) {
                 // search for something like "Profile : " pattern with no limit (horizon=0)
-                while (scanner.findWithinHorizon(RGX.get(), 0) != null)
+                while (scanner.findWithinHorizon(rgx.get(), 0) != null)
                     results.add(scanner.next().trim());
             }
         } catch (IOException e) { throw new RuntimeException(e); }
