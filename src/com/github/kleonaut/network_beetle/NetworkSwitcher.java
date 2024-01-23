@@ -4,14 +4,14 @@ import javax.swing.Timer;
 
 public class NetworkSwitcher implements ModeAware
 {
-    private final Timer timer;
+    private final Timer verificationTimer;
     private NetProfile nowProfile;
     private final PowerableGroup powerableGroup;
 
     public NetworkSwitcher(PowerableGroup powerableGroup)
     {
-        timer = new Timer(5000, e -> verify());
-        timer.setRepeats(false);
+        verificationTimer = new Timer(5000, e -> verify());
+        verificationTimer.setRepeats(false);
         this.powerableGroup = powerableGroup;
     }
 
@@ -27,16 +27,24 @@ public class NetworkSwitcher implements ModeAware
     @Override
     public void setMode(Mode mode)
     {
-        if (mode.netProfile() == NetProfile.DISCONNECT ||
-            mode.netProfile() == NetProfile.STAY)
-        {
-            timer.stop();
-            return;
-        }
         nowProfile = mode.netProfile();
-        timer.restart();
+        Networks.setProfile(mode.netProfile());
+
+        if (mode.netProfile() == NetProfile.DISCONNECT)
+        {
+            OverviewFrame.addToLog("Disconnecting from the Internet");
+            verificationTimer.stop();
+        }
+        else if (mode.netProfile() != NetProfile.STAY)
+        {
+            OverviewFrame.addToLog("Connecting to "+mode.netProfile().name());
+            verificationTimer.restart();
+        }
+        else
+            verificationTimer.stop();
+
     }
 
     @Override
-    public void setModeless() { timer.stop(); }
+    public void setModeless() { verificationTimer.stop(); }
 }
