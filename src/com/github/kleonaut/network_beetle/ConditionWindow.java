@@ -32,6 +32,7 @@ public class ConditionWindow
 
         nominatedCondtions = new JList<>(new DefaultListModel<>());
         nominatedCondtions.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        nominatedCondtions.setPrototypeCellValue("a");
         nominatedCondtions.addListSelectionListener(selectAction);
         DefaultListModel<String>listModel = (DefaultListModel<String>)nominatedCondtions.getModel();
         for (String condition : assignedConditions)
@@ -46,6 +47,7 @@ public class ConditionWindow
 
         possibleConditions = new JList<>(new DefaultListModel<>());
         possibleConditions.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        possibleConditions.setPrototypeCellValue("a");
         possibleConditions.addListSelectionListener(selectAction);
         possibleConditions.setEnabled(false);
         ((DefaultListModel<String>)possibleConditions.getModel()).addElement(" Fetching...");
