@@ -8,15 +8,24 @@ import java.util.Scanner;
 
 public class Networks
 {
-
     public static void setProfile(NetProfile profile)
     {
-        if (profile == NetProfile.STAY) return;
+        if (profile == NetProfile.STAY)
+        {
+            MainWindow.addToLog("Remaining on the same network");
+            return;
+        }
         try {
             if (profile == NetProfile.DISCONNECT)
+            {
                 Runtime.getRuntime().exec("netsh wlan disconnect");
+                MainWindow.addToLog("Disconnecting from the Internet");
+            }
             else
-                Runtime.getRuntime().exec("netsh wlan connect name=\""+profile.name()+"\"");
+            {
+                Runtime.getRuntime().exec("netsh wlan connect name=\"" + profile.name() + "\"");
+                MainWindow.addToLog("Connecting to "+profile.name());
+            }
         } catch (IOException e) { throw new RuntimeException(e); }
     }
 
@@ -31,7 +40,7 @@ public class Networks
         List<String> results = runAndParse("netsh wlan show profiles", Regex.ALL_PROFILES);
         List<NetProfile> profiles = new ArrayList<>();
         for (String item : results)
-            profiles.add(new NetProfile(item));
+            profiles.add(NetProfile.get(item));
         return profiles;
     }
 
@@ -39,7 +48,7 @@ public class Networks
     {
         List<String> results = runAndParse("netsh wlan show interfaces", Regex.PROFILE);
         if (results.isEmpty()) return NetProfile.DISCONNECT;
-        else return new NetProfile(results.getFirst());
+        else return NetProfile.get(results.getFirst());
     }
 
     public static List<NetProfile> fetchNearbyProfiles()

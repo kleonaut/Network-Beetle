@@ -1,18 +1,22 @@
-package com.github.kleonaut.network_beetle;
+package deprecated;
+
+import com.github.kleonaut.network_beetle.*;
+import com.github.kleonaut.network_beetle.Record;
 
 import javax.swing.Timer;
 import java.util.List;
 
-public class ModeUpdater implements Powerable
+// Observer design pattern
+public class ModeUpdater implements PowerObserver
 {
     private final Record record;
-    private final ModeAwareGroup modeAwareGroup;
+    private final ModePublisher modePublisher;
     private final Timer timer;
 
-    ModeUpdater(Record record, ModeAwareGroup modeAwareGroup)
+    ModeUpdater(Record record, ModePublisher modePublisher)
     {
         this.record = record;
-        this.modeAwareGroup = modeAwareGroup;
+        this.modePublisher = modePublisher;
         timer = new Timer(2000, e -> updateMode());
         timer.setRepeats(false);
     }
@@ -27,10 +31,10 @@ public class ModeUpdater implements Powerable
                     for (String task : tasks)
                         if (condition.equals(task))
                         {
-                            modeAwareGroup.setMode(mode);
+                            modePublisher.setMode(mode);
                             break search;
                         }
-            modeAwareGroup.setMode(record.defaultMode());
+            modePublisher.setMode(record.defaultMode());
         }
         timer.start();
     }

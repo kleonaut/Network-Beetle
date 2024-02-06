@@ -10,13 +10,14 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConditionDialog extends JDialog
+public class ConditionWindow
 {
     // TODO: list width changes when contents change because of button text update, list width should be fixed
 
+    private final JDialog dialog;
     private final JList<String> nominatedCondtions;
     private final JList<String> possibleConditions;
-    private final ModeDialog owner;
+    private final ModeWindow parent;
 
     private final JButton transferButton;
     private static final Timer timer = new Timer(2000, null);
@@ -24,10 +25,10 @@ public class ConditionDialog extends JDialog
     private boolean isLocked;
     private boolean isAdding;
 
-    ConditionDialog(ModeDialog owner, List<String> assignedConditions)
+    ConditionWindow(ModeWindow parent, List<String> assignedConditions)
     {
-        super(owner, "Assign Conditions", true);
-        this.owner = owner;
+        dialog = new JDialog(parent.dialog(), "Assign Conditions", true);
+        this.parent = parent;
 
         nominatedCondtions = new JList<>(new DefaultListModel<>());
         nominatedCondtions.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -67,12 +68,12 @@ public class ConditionDialog extends JDialog
         panel.add(confirmButton,
                   new Constraints(0, 1).width(3).anchor(6).get());
 
-        setContentPane(panel);
-        setSize(450, 300);
-        setLocationRelativeTo(owner);
+        dialog.setContentPane(panel);
+        dialog.setSize(450, 300);
+        dialog.setLocationRelativeTo(parent.dialog());
 
         timer.addActionListener(e -> updateConditions());
-        addWindowListener(new WindowAdapter()
+        dialog.addWindowListener(new WindowAdapter()
         {
             @Override
             public void windowClosing(WindowEvent e)
@@ -85,7 +86,7 @@ public class ConditionDialog extends JDialog
         timer.setInitialDelay(700);
         timer.start();
 
-        setVisible(true);
+        dialog.setVisible(true);
     }
 
     public void updateConditions()
@@ -165,7 +166,7 @@ public class ConditionDialog extends JDialog
         List<String> conditions = new ArrayList<>();
         for (int i = 0; i < nominatedCondtions.getModel().getSize(); i++)
             conditions.add(nominatedCondtions.getModel().getElementAt(i).trim());
-        owner.setConditions(conditions);
-        dispose();
+        parent.setConditions(conditions);
+        dialog.dispose();
     }
 }

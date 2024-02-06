@@ -6,19 +6,20 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-public class NetworkDialog extends JDialog
+public class NetworkWindow
 {
+    private final JDialog dialog;
     private final JTextArea nominatedNetwork;
     private final JList<String> networkList;
-    private final ModeDialog owner;
+    private final ModeWindow parent;
     private static final Timer timer = new Timer(2000, null);
 
-    NetworkDialog(ModeDialog owner, NetProfile assignedProfile)
+    NetworkWindow(ModeWindow parent, NetProfile assignedProfile)
     {
-        super(owner, "Assign Network Profile", true);
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog = new JDialog(parent.dialog(), "Assign Network Profile", true);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        this.owner = owner;
+        this.parent = parent;
 
         nominatedNetwork = new JTextArea(" "+assignedProfile.name());
         nominatedNetwork.setEditable(false);
@@ -46,12 +47,12 @@ public class NetworkDialog extends JDialog
         panel.add(confirmButton,
                   new Constraints(0, 2).anchor(6).get());
 
-        setContentPane(panel);
-        setSize(300, 250);
-        setLocationRelativeTo(owner);
+        dialog.setContentPane(panel);
+        dialog.setSize(300, 250);
+        dialog.setLocationRelativeTo(parent.dialog());
 
         timer.addActionListener(e -> updateNetworkList());
-        addWindowListener(new WindowAdapter()
+        dialog.addWindowListener(new WindowAdapter()
         {
             @Override
             public void windowClosing(WindowEvent e)
@@ -64,7 +65,7 @@ public class NetworkDialog extends JDialog
         timer.setInitialDelay(400);
         timer.start();
 
-        setVisible(true);
+        dialog.setVisible(true);
     }
 
     public void updateNetworkList()
@@ -92,13 +93,10 @@ public class NetworkDialog extends JDialog
     public void nominateSelection() { nominatedNetwork.setText(networkList.getSelectedValue()); }
     public void confirmSelection()
     {
-        String selection = nominatedNetwork.getText().trim();
-        if (selection.equals(NetProfile.DISCONNECT.name()))
-            owner.setNetwork(NetProfile.DISCONNECT);
-        else if (selection.equals(NetProfile.STAY.name()))
-            owner.setNetwork(NetProfile.STAY);
-        else
-            owner.setNetwork(new NetProfile(selection));
-        dispose();
+        System.out.println("-" + nominatedNetwork.getText().trim() + "-");
+        if (NetProfile.get(nominatedNetwork.getText().trim()) == NetProfile.STAY)
+            System.out.println("selection equals STAY");
+        parent.setNetwork(NetProfile.get(nominatedNetwork.getText().trim()));
+        dialog.dispose();
     }
 }

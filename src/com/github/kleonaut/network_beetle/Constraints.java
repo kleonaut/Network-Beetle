@@ -3,9 +3,10 @@ package com.github.kleonaut.network_beetle;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 
+// Builder design pattern
 public class Constraints
 {
-    private GridBagConstraints c = new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0);
+    private final GridBagConstraints c = new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0);
 
     public Constraints(int x, int y) { c.gridx = x; c.gridy = y; }
     public GridBagConstraints get() { return c; }

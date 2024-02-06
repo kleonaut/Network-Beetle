@@ -1,12 +1,12 @@
 package deprecated;
 
-import com.github.kleonaut.network_beetle.Powerable;
+import com.github.kleonaut.network_beetle.PowerObserver;
 import com.github.kleonaut.network_beetle.Record;
 import deprecated.regimen.Regimen;
 
 import javax.swing.Timer;
 
-public class Scout implements Powerable
+public class Scout implements PowerObserver
 {
     private final Timer timer = new Timer(2000, e -> run());
     private final Record record;

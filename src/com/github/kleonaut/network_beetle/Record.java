@@ -2,50 +2,76 @@ package com.github.kleonaut.network_beetle;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 public class Record
 {
-    //private final Preferences registry = Preferences.userRoot().node(this.getClass().getName());
+    private final int VERSION = 1;
+    private final Preferences registry = Preferences.userNodeForPackage(Record.class);
 
-    private boolean isLaunchedOnStartup;
-    private boolean isEnabledOnLaunch;
-    private List<Mode> extraModes; // list is to be ordered with first element as highest priority
-    private Mode defaultMode;
+    private List<Mode> modes;
 
     public Record()
     {
-        isLaunchedOnStartup = true;
-        isEnabledOnLaunch = true;
-        List<Mode> modes = new ArrayList<>();
-        modes.add(new Mode("Mode 1"));
-        extraModes = List.copyOf(modes);
-        defaultMode = genDefaultMode();
+        registry.putInt(versionKey(), VERSION);
+        int modeCount = registry.getInt(modeCountKey(), 2);
+        List<Mode> list = new ArrayList<>();
+        for (int i = 0; i < modeCount; i++)
+            list.add(retrieveMode(i));
+        modes = List.copyOf(list);
     }
 
-    private Mode genDefaultMode()
+    // list is ordered with first element as highest priority
+    public List<Mode> modes() { return modes; }
+    public Mode mode(int index) { return modes.get(index); }
+    public Mode defaultMode() { return modes.getLast(); }
+
+    public void overwriteModeAt(int index, Mode mode)
     {
-        Mode mode = new Mode("Mode 0");
+        int m = index;
+
+        // overwrite in memory
+        List<Mode> list = new ArrayList<>(modes);
+        list.set(m, mode);
+        modes = List.copyOf(list);
+        System.out.println(modes);
+
+        // save to registry
+        registry.put(modeNameKey(m), mode.name());
+        registry.put(modeProfileIdKey(m), mode.netProfile().id());
+        registry.putInt(modeConditionCountKey(m), mode.conditions().size());
+        for (int c = 0; c < mode.conditions().size(); c++)
+            registry.put(modeConditionKey(m, c), mode.conditions().get(c));
+    }
+
+    private Mode retrieveMode(int index)
+    {
+        int m = index;
+
+        String name = registry.get(modeNameKey(m), modeNameDefault(m));
+        NetProfile profile = NetProfile.get(registry.get(modeProfileIdKey(m), modeProfileIdDefault()));
+
         List<String> conditions = new ArrayList<>();
-        conditions.add("Conditions can not be added");
-        conditions.add("to the default mode");
-        mode.setConditions(conditions);
-        return mode;
+        int conditionCount = registry.getInt(modeConditionCountKey(m), 0);
+        for (int c = 0; c < conditionCount; c++)
+            conditions.add(registry.get(modeConditionKey(m, c), modeConditionDefault()));
+
+        return new ModeBuilder()
+            .setName(name)
+            .setProfile(profile)
+            .setConditions(conditions)
+            .get();
     }
 
-    // list is to be ordered with first element as highest priority
-    public List<Mode> modes(boolean defaultIncluded)
-    {
-        if (defaultIncluded)
-        {
-            List<Mode> allModes = new ArrayList<>(this.extraModes);
-            allModes.addLast(defaultMode);
-            return List.copyOf(allModes);
-        }
-        return extraModes;
-    }
-
-    public Mode defaultMode() { return defaultMode; }
-
-    //public AppVariables save() {}
-    //public AppVariables load() {}
+    private String versionKey() { return "version"; }
+    private String launchedKey() { return "is_launched_on_startup"; }
+    private String enabledKey() { return "is_enabled_on_launch"; }
+    private String modeCountKey() { return "mode_count"; }
+    private String modeNameKey(int modeIndex) { return "mode"+modeIndex+"_name"; }
+    private String modeProfileIdKey(int modeIndex) { return "mode"+modeIndex+"_network_profile"; }
+    private String modeConditionCountKey(int modeIndex) { return "mode"+modeIndex+"_condition_count"; }
+    private String modeConditionKey(int modeIndex, int conditionIndex) { return "mode"+modeIndex+"_condition"+conditionIndex; }
+    private String modeNameDefault(int modeIndex) { return "Mode " + modeIndex; }
+    private String modeProfileIdDefault() { return NetProfile.STAY.id(); }
+    private String modeConditionDefault() { return "[Error retrieving condition]"; }
 }

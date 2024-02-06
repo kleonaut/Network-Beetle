@@ -3,36 +3,35 @@ package com.github.kleonaut.network_beetle;
 public class App
 {
     public static final String NAME = "Network Beetle";
+    public static final String VERSION = "0.01";
 
     public App()
     {
         Record record = new Record();
 
-        ModeAwareGroup modeAwareGroup = new ModeAwareGroup();
-        PowerableGroup powerableGroup = new PowerableGroup();
-        DisposableGroup disposableGroup = new DisposableGroup();
+        ModePublisher modePublisher = new ModePublisher(record);
+        PowerPublisher powerPublisher = new PowerPublisher();
+        DisposePublisher disposePublisher = new DisposePublisher();
 
-        OverviewFrame window = new OverviewFrame(powerableGroup, modeAwareGroup, record);
-        Tray tray = new Tray(window, powerableGroup, disposableGroup);
-        ModeUpdater updater = new ModeUpdater(record, modeAwareGroup);
-        NetworkSwitcher netSwitcher = new NetworkSwitcher(powerableGroup);
+        MainWindow window = new MainWindow(powerPublisher, record);
+        Tray tray = new Tray(window, powerPublisher, disposePublisher);
+        NetProfileSwitcher netSwitcher = new NetProfileSwitcher(powerPublisher);
 
         // objects will switch mode in this order
-        modeAwareGroup.add(window);
-        modeAwareGroup.add(netSwitcher);
-        modeAwareGroup.add(tray);
+        modePublisher.add(window);
+        modePublisher.add(netSwitcher);
+        modePublisher.add(tray);
 
         // objects will be disposed of in this order
-        disposableGroup.add(powerableGroup);
-        disposableGroup.add(tray);
-        disposableGroup.add(window);
+        disposePublisher.add(powerPublisher);
+        disposePublisher.add(tray);
+        disposePublisher.add(window);
 
         // objects will be powered in this order
-        powerableGroup.add(modeAwareGroup);
-        powerableGroup.add(tray);
-        powerableGroup.add(window);
-        powerableGroup.add(updater);
+        powerPublisher.add(modePublisher);
+        powerPublisher.add(tray);
+        powerPublisher.add(window);
 
-        powerableGroup.turnOn();
+        powerPublisher.turnOn();
     }
 }

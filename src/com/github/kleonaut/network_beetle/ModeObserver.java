@@ -1,6 +1,6 @@
 package com.github.kleonaut.network_beetle;
 
-public interface ModeAware
+public interface ModeObserver
 {
     void setMode(Mode mode);
     void setModeless();

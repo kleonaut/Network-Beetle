@@ -5,22 +5,22 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-public class Tray implements Powerable, Disposable, ModeAware
+public class Tray implements PowerObserver, DisposeObserver, ModeObserver
 {
     private final CheckboxMenuItem powerButton;
     private final SystemTray systemTray = SystemTray.getSystemTray();
     private final TrayIcon trayIcon;
 
-    Tray(OverviewFrame window, PowerableGroup powerableGroup, DisposableGroup disposableGroup)
+    Tray(MainWindow window, PowerPublisher powerPublisher, DisposePublisher disposePublisher)
     {
         PopupMenu menu = new PopupMenu();
         MenuItem revealButton = new MenuItem("Open");
         revealButton.addActionListener(e -> window.setVisible(true));
         MenuItem quitButton = new MenuItem("Quit "+App.NAME);
-        quitButton.addActionListener(e -> disposableGroup.killAll());
+        quitButton.addActionListener(e -> disposePublisher.killAll());
         powerButton = new CheckboxMenuItem("Enabled");
         powerButton.setState(true);
-        powerButton.addItemListener(e -> powerableGroup.toggle());
+        powerButton.addItemListener(e -> powerPublisher.toggle());
         menu.add(revealButton);
         menu.add(powerButton);
         menu.addSeparator();
@@ -42,6 +42,12 @@ public class Tray implements Powerable, Disposable, ModeAware
 
     @Override
     public void setPowered(boolean flag) { powerButton.setState(flag); }
+
+    @Override
+    public void setPowerBlocked(boolean flag)
+    {
+        powerButton.setEnabled(!flag);
+    }
 
     @Override
     public void setMode(Mode mode) { trayIcon.setToolTip(App.NAME+" "+mode.name()); }
