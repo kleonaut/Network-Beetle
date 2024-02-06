@@ -42,10 +42,8 @@ public class ModePublisher implements PowerObserver
 
     private void publish(Mode mode)
     {
-        System.out.println("publishing mode " + ((mode == null) ? "none" : mode.name()));
         if (nowMode != mode)
         {
-            System.out.println("Mode is new, replacing " + ((nowMode == null) ? "none" : nowMode.name()));
             nowMode = mode;
             if (mode == null)
                 for (ModeObserver observer : observers) observer.setModeless();

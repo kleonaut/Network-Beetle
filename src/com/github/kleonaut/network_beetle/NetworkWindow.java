@@ -93,9 +93,6 @@ public class NetworkWindow
     public void nominateSelection() { nominatedNetwork.setText(networkList.getSelectedValue()); }
     public void confirmSelection()
     {
-        System.out.println("-" + nominatedNetwork.getText().trim() + "-");
-        if (NetProfile.get(nominatedNetwork.getText().trim()) == NetProfile.STAY)
-            System.out.println("selection equals STAY");
         parent.setNetwork(NetProfile.get(nominatedNetwork.getText().trim()));
         dialog.dispose();
     }

@@ -34,7 +34,6 @@ public class Record
         List<Mode> list = new ArrayList<>(modes);
         list.set(m, mode);
         modes = List.copyOf(list);
-        System.out.println(modes);
 
         // save to registry
         registry.put(modeNameKey(m), mode.name());
@@ -71,7 +70,7 @@ public class Record
     private String modeProfileIdKey(int modeIndex) { return "mode"+modeIndex+"_network_profile"; }
     private String modeConditionCountKey(int modeIndex) { return "mode"+modeIndex+"_condition_count"; }
     private String modeConditionKey(int modeIndex, int conditionIndex) { return "mode"+modeIndex+"_condition"+conditionIndex; }
-    private String modeNameDefault(int modeIndex) { return "Mode " + modeIndex; }
+    private String modeNameDefault(int modeIndex) { return (modeIndex == 1) ? "Default Mode" : "Preferrential Mode"; }
     private String modeProfileIdDefault() { return NetProfile.STAY.id(); }
     private String modeConditionDefault() { return "[Error retrieving condition]"; }
 }

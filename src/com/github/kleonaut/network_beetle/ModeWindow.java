@@ -111,11 +111,7 @@ public class ModeWindow
         List<String> list = new ArrayList<>();
         Scanner s = new Scanner(string).useDelimiter("\\n");
         while(s.hasNext())
-        {
-            String item = s.next();
-            if (item.isEmpty()) System.out.println("Empty condition in ModeWindow, line 116");
-            list.add(item.trim());
-        }
+            list.add(s.next().trim());
         return list;
     }
 
