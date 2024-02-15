@@ -55,8 +55,6 @@ public class MainWindow implements PowerObserver, DisposeObserver, ModeObserver
         frame.setContentPane(panel);
         frame.pack();
         frame.setLocationRelativeTo(null);
-
-        frame.setVisible(true);
     }
 
     public void openModeDialog(int modeIndex)
