@@ -19,12 +19,14 @@ public class Record
         for (int i = 0; i < modeCount; i++)
             list.add(retrieveMode(i));
         modes = List.copyOf(list);
+        setLaunchedOnStartup(true); // for now the app has no autostart setting option
     }
 
     // list is ordered with first element as highest priority
     public List<Mode> modes() { return modes; }
     public Mode mode(int index) { return modes.get(index); }
     public Mode defaultMode() { return modes.getLast(); }
+    public void setLaunchedOnStartup(boolean flag) { AutorunWriter.setLaunchedOnStartup(flag); }
 
     public void overwriteModeAt(int index, Mode mode)
     {
@@ -62,7 +64,9 @@ public class Record
             .get();
     }
 
+
     private String versionKey() { return "version"; }
+    private String startupKey() { return App.NAME; }
     private String launchedKey() { return "is_launched_on_startup"; }
     private String enabledKey() { return "is_enabled_on_launch"; }
     private String modeCountKey() { return "mode_count"; }
